@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import { readFile } from "fs/promises";
 import { writeFile } from "fs/promises";
 
 const USER_API_URL = "https://challenge.sunvoy.com"; //NOTE - url for user fetching
@@ -40,17 +41,15 @@ async function fetchUsers() {
 }
 
 async function fetchCurrentUser() {
-  const payload = new URLSearchParams({
-    access_token:
-      "ca7073fc2a5d6236859cb0214090ff7af5436743737334c09b30ad58c48e6df5",
-    apiuser: "demo@example.org",
-    language: "en_US",
-    openId: "openid456",
-    operateId: "op789",
-    timestamp: "1750080405",
-    userId: "d9b30f76-2c07-468b-9c23-63de80f0ebf2",
-    checkcode: "DC238AD50154A3C1F3E6339E10016507928195F3",
-  });
+  let creds;
+  try {
+    const raw = await readFile("credentials.json", "utf-8");
+    creds = JSON.parse(raw);
+  } catch (e) {
+    throw new Error("Missing or unreadable credentials.json");
+  }
+
+  const payload = new URLSearchParams(creds);
 
   const res = await fetch(`${SETTINGS_API_URL}/api/settings`, {
     method: "POST",
